@@ -57,26 +57,53 @@ const { sha, ver } = removeDuplicate[0];
 
 $('.ver').text(ver);
 $('#a').val(
-  `<link href="https://cdn.jsdelivr.net/gh/${REPO}@${sha}/css/all.css" rel="stylesheet" type="text/css" />`
+  `<link href="https://cdn.jsdelivr.net/gh/${REPO}@${sha}/css/all.min.css" rel="stylesheet" type="text/css" />`
 );
 $('#c').val(
-  `<link href="https://cdn.staticaly.com/gh/${REPO}/${sha}/css/all.css" rel="stylesheet" type="text/css" />`
+  `<link href="https://cdn.staticaly.com/gh/${REPO}/${sha}/css/all.min.css" rel="stylesheet" type="text/css" />`
 );
 $('#e').val(
-  `<link href="https://rawcdn.githack.com/${REPO}/${sha}/css/all.css" rel="stylesheet" type="text/css" />`
+  `<link href="https://rawcdn.githack.com/${REPO}/${sha}/css/all.min.css" rel="stylesheet" type="text/css" />`
 );
 $('head').append($('#a').val());
 
-$('body').on('select2:select', '#list-versions', function () {
-  let newSHA = $(this).val();
-  const replaceSHA = (ele, sha = newSHA) =>
-    $(ele)
+const replaceSHA = ({ element, sha }) =>
+  $(element).val(
+    $(element)
       .val()
-      .replace(/[a-f0-9]{7}\//i, `${sha}/`);
+      .replace(/[a-f0-9]{7}\//i, `${sha}/`)
+  );
 
-  $('#a').val(replaceSHA('#a'));
-  $('#c').val(replaceSHA('#c'));
-  $('#e').val(replaceSHA('#e'));
+$('body').on('select2:select', '#list-versions', function () {
+  const newSHA = $(this).val();
+
+  ['#a', '#c', '#e'].forEach(function (element) {
+    replaceSHA({
+      element,
+      sha: newSHA,
+    });
+  });
+});
+
+const exportMinifiedLink = ({ element, isChecked }) => {
+  const value = $(element).val();
+
+  if (isChecked) {
+    $(element).val(value.replace('all.css', 'all.min.css'));
+  } else {
+    $(element).val(value.replace('all.min.css', 'all.css'));
+  }
+};
+
+$('body').on('change', '#minified', function () {
+  const isChecked = $(this).prop('checked');
+
+  ['#a', '#c', '#e'].forEach(function (element) {
+    exportMinifiedLink({
+      element,
+      isChecked,
+    });
+  });
 });
 
 $('body').on('select2:select', '#archive', function () {
@@ -104,9 +131,9 @@ const copyObj = {
         let btn = `#${this.item[key].btn}`,
           input = `#${this.item[key].input}`;
         $('body').on('click', btn, function () {
-          if ($(input).val().length > 0) {
+          if ($(input).val().length > 0 && navigator?.clipboard) {
             $(input).select();
-            document.execCommand('copy');
+            navigator.clipboard.writeText($(input).val());
           }
         });
       }

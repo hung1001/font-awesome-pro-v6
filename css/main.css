@@ -21,11 +21,19 @@
 }
 
 a:hover {
-  opacity: .8;
+  opacity: 0.8;
   text-decoration: none;
   transition: all 300ms ease;
 }
 
 .form-control:focus {
+  box-shadow: none;
+}
+
+.custom-control-label {
+  cursor: pointer;
+}
+
+.custom-control-input:focus ~ .custom-control-label:before {
   box-shadow: none;
 }
